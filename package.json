@@ -1,0 +1,23 @@
+{
+  "name": "porse-commerce",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Full-stack e-commerce starter: React storefront + Node API + Stripe",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web -c cyan,magenta \"npm:dev --workspace @porse/api\" \"npm:dev --workspace @porse/web\"",
+    "build": "npm run build --workspace @porse/api && npm run build --workspace @porse/web",
+    "start": "npm run start --workspace @porse/api",
+    "db:generate": "npm run db:generate --workspace @porse/api",
+    "db:seed": "npm run db:seed --workspace @porse/api"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
