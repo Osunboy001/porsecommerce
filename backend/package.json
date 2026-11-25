@@ -5,21 +5,19 @@
   "type": "module",
   "scripts": {
     "dev": "node --watch server.js",
-    "build": "node --check server.js && node --check app.js && node --check prisma/seed.js",
+    "build": "node --check server.js && node --check app.js && node --check scripts/seed.js && node --check scripts/seed-admin.js",
     "start": "node server.js",
-    "db:generate": "prisma generate --schema prisma/schema.prisma",
-    "db:seed": "node prisma/seed.js",
-    "postinstall": "prisma generate --schema prisma/schema.prisma"
+    "db:seed": "node scripts/seed.js",
+    "db:seed:admin": "node scripts/seed-admin.js"
   },
   "dependencies": {
-    "@prisma/client": "^6.5.0",
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.3",
+    "mongodb": "^6.22.0",
     "stripe": "^17.7.0",
     "zod": "^3.24.2"
-  },
-  "devDependencies": {
-    "prisma": "^6.5.0"
   }
 }

@@ -23,15 +23,28 @@ export function formatPrice(price) {
   }).format(price ?? 0)
 }
 
+export function slugify(value) {
+  return String(value ?? '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
 export function normalizeProduct(product) {
   const categoryName =
     typeof product.category === 'string'
       ? product.category
       : product.category?.name ?? ''
+  const categorySlug =
+    typeof product.category === 'string'
+      ? slugify(product.category)
+      : product.category?.slug ?? slugify(categoryName)
 
   return {
     ...product,
     category: categoryName,
+    categorySlug,
     image: product.images?.[0] ?? product.image ?? '',
     badge: product.badge ?? (product.featured ? 'Bestseller' : undefined),
     rating: product.rating ?? 0,

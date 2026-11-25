@@ -50,6 +50,14 @@ export default {
           '0%': { opacity: '0', transform: 'translate(-50%, 12px)' },
           '100%': { opacity: '1', transform: 'translate(-50%, 0)' },
         },
+        drawer: {
+          '0%': { transform: 'translateX(100%)' },
+          '100%': { transform: 'translateX(0)' },
+        },
+        fade: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
       },
     },
   },

@@ -12,7 +12,7 @@ import {
   Star,
   Truck,
 } from 'lucide-react'
-import ProductCard from '../components/ProductCard'
+import ProductGrid from '../components/ProductGrid'
 import { formatPrice } from '../lib/api'
 
 const views = [
@@ -21,7 +21,7 @@ const views = [
   { label: 'Texture', className: 'scale-[1.7] -rotate-3' },
 ]
 
-const tabs = ['Details', 'Specifications', 'Shipping & Returns']
+const tabs = ['Details', 'Specifications', 'Reviews', 'Shipping & Returns']
 
 export default function ProductDetail({ products, onAdd }) {
   const { slug } = useParams()
@@ -41,14 +41,18 @@ export default function ProductDetail({ products, onAdd }) {
     )
   }
 
-  const related = products.filter((item) => item.slug !== product.slug).slice(0, 4)
+  const otherProducts = products.filter((item) => item.slug !== product.slug)
+  const related = [
+    ...otherProducts.filter((item) => item.categorySlug === product.categorySlug),
+    ...otherProducts.filter((item) => item.categorySlug !== product.categorySlug),
+  ].slice(0, 4)
 
   return (
     <div className="mx-auto max-w-7xl px-5 pb-24 pt-6 sm:px-8 sm:pt-10">
       <nav className="flex flex-wrap items-center gap-1.5 text-xs text-muted" aria-label="Breadcrumb">
         <Link to="/" className="transition hover:text-ink">Shop</Link>
         <ChevronRight size={13} />
-        <Link to={`/?category=${encodeURIComponent(product.category)}`} className="transition hover:text-ink">
+        <Link to={`/shop?category=${encodeURIComponent(product.categorySlug)}`} className="transition hover:text-ink">
           {product.category}
         </Link>
         <ChevronRight size={13} />
@@ -78,6 +82,7 @@ export default function ProductDetail({ products, onAdd }) {
                 <Star
                   key={index}
                   size={16}
+                  aria-hidden="true"
                   className={index < Math.round(product.rating) ? 'fill-ember-500 text-ember-500' : 'fill-black/10 text-black/10'}
                 />
               ))}
@@ -92,7 +97,7 @@ export default function ProductDetail({ products, onAdd }) {
           <p className="mt-1 text-xs text-muted">Taxes calculated at checkout.</p>
 
           <p className="mt-6 max-w-md text-[15px] leading-relaxed text-muted">
-            {product.description}
+            {product.shortDescription || product.description}
           </p>
 
           <div className="my-8 h-px bg-black/[0.07]" />
@@ -201,12 +206,14 @@ export default function ProductDetail({ products, onAdd }) {
           {activeTab === 'Details' && (
             <div>
               <h2 className="font-display text-2xl font-bold tracking-tight text-ink">About this product</h2>
-              <p className="mt-4 leading-relaxed text-muted">
-                {product.description} Every piece is chosen for the way it feels in everyday use —
-                not just how it looks on a shelf.
-              </p>
+              <p className="mt-4 leading-relaxed text-muted">{product.description}</p>
+              {product.brand && (
+                <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-purple-600">
+                  {typeof product.brand === 'string' ? product.brand : product.brand.name}
+                </p>
+              )}
               <ul className="mt-6 space-y-3">
-                {product.details.map((detail) => (
+                {(product.details ?? []).map((detail) => (
                   <li key={detail} className="flex items-start gap-3 text-sm text-ink">
                     <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-100 text-purple-600">
                       <Check size={12} strokeWidth={3} />
@@ -222,7 +229,7 @@ export default function ProductDetail({ products, onAdd }) {
             <div>
               <h2 className="font-display text-2xl font-bold tracking-tight text-ink">Specifications</h2>
               <dl className="mt-5 divide-y divide-black/[0.07]">
-                {product.specs.map((spec) => (
+                {(product.specs ?? []).map((spec) => (
                   <div key={spec.label} className="flex justify-between gap-6 py-3.5 text-sm">
                     <dt className="text-muted">{spec.label}</dt>
                     <dd className="font-medium text-ink">{spec.value}</dd>
@@ -230,9 +237,51 @@ export default function ProductDetail({ products, onAdd }) {
                 ))}
                 <div className="flex justify-between gap-6 py-3.5 text-sm">
                   <dt className="text-muted">SKU</dt>
-                  <dd className="font-accent font-medium text-ink">{product.slug.toUpperCase()}</dd>
+                  <dd className="font-accent font-medium text-ink">{product.sku ?? product.slug.toUpperCase()}</dd>
                 </div>
               </dl>
+            </div>
+          )}
+
+          {activeTab === 'Reviews' && (
+            <div>
+              <div className="flex flex-wrap items-end justify-between gap-4">
+                <h2 className="font-display text-2xl font-bold tracking-tight text-ink">Customer reviews</h2>
+                <p className="text-sm text-muted">
+                  <span className="font-accent font-semibold text-ink">{product.rating.toFixed(1)}</span> out of 5 ·{' '}
+                  {product.reviewCount} {product.reviewCount === 1 ? 'review' : 'reviews'}
+                </p>
+              </div>
+
+              {product.reviews?.length ? (
+                <div className="mt-6 space-y-4">
+                  {product.reviews.map((review, index) => (
+                    <article key={`${review.title}-${index}`} className="rounded-3xl border border-black/[0.06] bg-white p-5">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <h3 className="font-display text-sm font-bold text-ink">{review.title}</h3>
+                        <div className="flex items-center gap-0.5" aria-label={`${review.rating} out of 5 stars`}>
+                          {Array.from({ length: 5 }, (_, star) => (
+                            <Star
+                              key={star}
+                              size={13}
+                              aria-hidden="true"
+                              className={star < Math.round(review.rating) ? 'fill-ember-500 text-ember-500' : 'fill-black/10 text-black/10'}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <p className="mt-3 text-sm leading-relaxed text-muted">{review.body}</p>
+                      <p className="mt-4 text-xs font-medium text-ink">
+                        {review.author ?? 'Verified buyer'}
+                        {review.createdAt &&
+                          ` · ${new Date(review.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`}
+                      </p>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-6 text-sm text-muted">No reviews yet. Be the first to share your thoughts.</p>
+              )}
             </div>
           )}
 
@@ -256,10 +305,8 @@ export default function ProductDetail({ products, onAdd }) {
             View all <ChevronRight size={16} />
           </Link>
         </div>
-        <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 lg:grid-cols-4 lg:gap-x-8">
-          {related.map((item) => (
-            <ProductCard key={item.slug} product={item} onAdd={(p) => onAdd(p, 1)} />
-          ))}
+        <div className="mt-8">
+          <ProductGrid products={related} onAdd={(item) => onAdd(item, 1)} />
         </div>
         <Link to="/" className="mt-12 inline-flex items-center gap-2 text-sm font-semibold text-muted transition hover:text-ink">
           <ArrowLeft size={16} /> Back to shop

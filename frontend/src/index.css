@@ -41,3 +41,11 @@
     background-color: #5122be;
   }
 }
+
+.admin-app,
+.admin-app .font-display,
+.admin-app .font-sans,
+.admin-app .font-accent,
+.admin-app code {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
