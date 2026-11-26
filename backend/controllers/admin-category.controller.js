@@ -91,3 +91,4 @@ export const remove = handle(async (req, res) => {
   })
   res.json({ ok: true })
 })
+
